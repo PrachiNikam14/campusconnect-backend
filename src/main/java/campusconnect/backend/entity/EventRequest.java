@@ -29,7 +29,7 @@ public class EventRequest {
     private EventCategory category;
 
     @Enumerated(EnumType.STRING)
-    private VerificationStatus status;
+    private EventStatus eventStatus;
 
     @ManyToOne
     private College college;

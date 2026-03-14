@@ -1,7 +1,8 @@
 package campusconnect.backend.entity;
     public enum EventStatus {
-        PENDING,    // College has not responded
+        PENDING,    // College made an event request
+        PLANNED,    // Admin given the event flow
         CONFIRMED,  // College confirmed
-        REJECTED,   // College rejected
+        REJECTED,   // College/Admin rejected
         RESCHEDULED // College wants to change date
     }

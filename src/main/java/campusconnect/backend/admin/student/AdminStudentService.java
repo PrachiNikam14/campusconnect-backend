@@ -1,0 +1,69 @@
+package campusconnect.backend.admin.student;
+
+import campusconnect.backend.entity.Student;
+import campusconnect.backend.entity.VerificationStatus;
+import campusconnect.backend.repository.StudentRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class AdminStudentService {
+
+    @Autowired
+    private StudentRepository studentRepo;
+
+    public AdminStudentDTO mapToDTO(Student student) {
+        return AdminStudentDTO.builder()
+                .id(student.getId())
+                .rollNumber(student.getRollNumber())
+                .department(student.getDepartment())
+                .year(student.getYear())
+                .bio(student.getBio())
+                .skills(student.getSkills())
+                .hobbies(student.getHobbies())
+                .linkedinUrl(student.getLinkedinUrl())
+                .githubUrl(student.getGithubUrl())
+                .profilePhoto(student.getProfilePhoto())
+                .idCardUrl(student.getIdCardUrl())
+                .verificationStatus(student.getVerificationStatus())
+                .userId(student.getUser().getId())
+                .userName(student.getUser().getName())
+                .userEmail(student.getUser().getEmail())
+                .CollegeId(student.getCollege().getId())
+                .CollegeName(student.getCollege().getName())
+                .build();
+    }
+
+    public List<AdminStudentDTO> getStudents(VerificationStatus status){
+
+        List<Student> students;
+
+        if(status != null)
+            students = studentRepo.findByVerificationStatus(status);
+        else
+            students = studentRepo.findAll();
+
+        return students.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public AdminStudentDTO getStudentById(Long id){
+        Student student = studentRepo.findById(id)
+                .orElseThrow(()-> new RuntimeException("Student not found"));
+        return mapToDTO(student);
+    }
+
+    public AdminStudentDTO verifyStatus(Long id, VerificationStatus status){
+        Student student = studentRepo.findById(id)
+                .orElseThrow(()-> new RuntimeException("Student not found"));
+        student.setVerificationStatus(status);
+
+        studentRepo.save(student);
+
+        return mapToDTO(student);
+    }
+}

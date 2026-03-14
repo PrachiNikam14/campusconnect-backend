@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Table(name = "event_service")
 public class EventService {
 
     @Id
@@ -18,11 +19,14 @@ public class EventService {
     private Long id;
 
     @ManyToOne
-    private Event event;
+    @JoinColumn(name = "event_id")
+    private EventRequest eventRequest;
 
     @ManyToOne
+    @JoinColumn(name = "service_id")
     private Service service;
 
     @ManyToOne
+    @JoinColumn(name = "vendor_id")
     private Vendor vendor; // assigned by admin
 }

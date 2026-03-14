@@ -28,6 +28,8 @@ public class AdminVendorDTO {
 
     private Long userId;
 
+    private String userName;
+
     private String userEmail;
 
 }

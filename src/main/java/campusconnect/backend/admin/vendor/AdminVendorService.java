@@ -29,6 +29,7 @@ public class AdminVendorService {
                 .businessLicenseUrl(vendor.getBusinessLicenseUrl())
                 .verificationStatus(vendor.getVerificationStatus())
                 .userId(vendor.getUser().getId())
+                .userName(vendor.getUser().getName())
                 .userEmail(vendor.getUser().getEmail())
                 .build();
     }
