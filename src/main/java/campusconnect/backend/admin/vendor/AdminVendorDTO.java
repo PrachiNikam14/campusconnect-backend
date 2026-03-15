@@ -32,4 +32,6 @@ public class AdminVendorDTO {
 
     private String userEmail;
 
+    private boolean userEnabled;
+
 }
