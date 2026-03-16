@@ -1,8 +1,7 @@
 package campusconnect.backend.admin.event;
 
-import campusconnect.backend.entity.EventService;
+import campusconnect.backend.admin.vendor.AdminVendorDTO;
 import campusconnect.backend.entity.EventStatus;
-import campusconnect.backend.entity.Vendor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,17 +35,28 @@ public class AdminEventController {
         return ResponseEntity.ok(adminEventService.updateStatus(id, status));
     }
 
-    @PatchMapping("/service-vendor/{service_id}")
-    public ResponseEntity<EventService> assignVendor(@PathVariable Long service_id,
+    @PatchMapping("/service-vendor/{eventId}/{serviceId}")
+    public ResponseEntity<AdminEventServiceDTO> assignVendor(@PathVariable Long eventId,
+                                                     @PathVariable Long serviceId,
                                                      @RequestParam(required = false) Long vendorId)
     {
-        return  ResponseEntity.ok(adminEventService.assignVendor(service_id, vendorId));
+        return  ResponseEntity.ok(adminEventService.assignVendor(eventId, serviceId, vendorId));
     }
 
-    @GetMapping("/services/{service_id}/vendors")
-    public ResponseEntity<List<Vendor>> getServiceVendors(@PathVariable Long service_id)
+    @GetMapping("/service/{serviceId}/vendors")
+    public ResponseEntity<List<AdminVendorDTO>> getServiceVendors(@PathVariable Long serviceId)
     {
-        return  ResponseEntity.ok(adminEventService.getServiceVendors(service_id));
+        return  ResponseEntity.ok(adminEventService.getServiceVendors(serviceId));
     }
+
+    @GetMapping("/event-services")
+    public ResponseEntity<List<AdminEventServiceDTO>> getEventServices(){
+        return ResponseEntity.ok(adminEventService.getEventServices());
+    }
+
+    @GetMapping("/event-services/{id}")
+        public ResponseEntity<AdminEventServiceDTO> getEventServiceById(@PathVariable Long id){
+            return ResponseEntity.ok(adminEventService.getEventServiceById(id));
+        }
 
 }

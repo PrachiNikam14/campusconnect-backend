@@ -28,6 +28,7 @@ public class AdminCollegeService {
                 .verificationStatus(college.getVerificationStatus())
                 .userId(college.getUser().getId())
                 .userEmail(college.getUser().getEmail())
+                .userEnabled(college.getUser().isEnabled())
                 .build();
     }
 

@@ -27,6 +27,7 @@ public class AdminStudentDTO {
     private Long userId;
     private String userName;
     private String userEmail;
+    private boolean userEnabled;
     private Long CollegeId;
     private String CollegeName;
 }

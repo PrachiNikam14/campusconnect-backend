@@ -1,8 +1,14 @@
 package campusconnect.backend.repository;
 
+import campusconnect.backend.entity.EventRequest;
 import campusconnect.backend.entity.EventService;
+import campusconnect.backend.entity.ServiceType;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+import java.util.Optional;
 
 public interface EventServiceRepository extends JpaRepository<EventService, Long> {
 
+    Optional<EventService> findByEventRequestAndServiceType(EventRequest eventRequest, ServiceType service);
 }

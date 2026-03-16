@@ -34,5 +34,7 @@ public class AdminCollegeDTO {
 
         private String userEmail;
 
+        private boolean userEnabled;
+
     }
 

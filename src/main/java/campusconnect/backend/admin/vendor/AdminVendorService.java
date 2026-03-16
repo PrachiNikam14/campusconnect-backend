@@ -32,6 +32,7 @@ public class AdminVendorService {
                 .userId(vendor.getUser() != null ? vendor.getUser().getId() : null)
                 .userName(vendor.getUser() != null ? vendor.getUser().getName() : null)
                 .userEmail(vendor.getUser() != null ? vendor.getUser().getEmail() : null)
+                .userEnabled(vendor.getUser() != null ? vendor.getUser().isEnabled() : null)
                 .build();
     }
 
@@ -63,6 +64,8 @@ public class AdminVendorService {
         Vendor vendor = vendorRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Vendor not found"));
 
+        vendor.setVerificationStatus(status);
+
         // If admin approves vendor
         if (status == VerificationStatus.APPROVED) {
 
@@ -79,7 +82,6 @@ public class AdminVendorService {
             }
         }
 
-        vendor.setVerificationStatus(status);
         vendorRepo.save(vendor);
 
         return mapToDTO(vendor);

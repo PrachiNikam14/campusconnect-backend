@@ -39,16 +39,22 @@ public class UserService {
         return convertToDTO(user);
     }
 
-    public UserDTO blockUser(Long id) {
-
+    public UserDTO setUserStatus(Long id, boolean enabled) {
         User user = userRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        user.setEnabled(false);
-
+        user.setEnabled(enabled);
         userRepo.save(user);
 
         return convertToDTO(user);
+    }
+
+    public List<UserDTO> getBlockedUsers(){
+        List<User> users = userRepo.findByEnabledFalse();
+
+        return users.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     public void deleteUser(Long id) {

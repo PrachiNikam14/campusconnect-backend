@@ -32,6 +32,7 @@ public class AdminStudentService {
                 .userId(student.getUser().getId())
                 .userName(student.getUser().getName())
                 .userEmail(student.getUser().getEmail())
+                .userEnabled(student.getUser().isEnabled())
                 .CollegeId(student.getCollege().getId())
                 .CollegeName(student.getCollege().getName())
                 .build();

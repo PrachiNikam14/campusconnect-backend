@@ -29,10 +29,17 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
-    // Block user
-    @PatchMapping("/{id}/block")
-    public ResponseEntity<UserDTO> blockUser(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.blockUser(id));
+    // Block & Unblock user
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<UserDTO> updateUserStatus(@PathVariable Long id,
+                                                    @RequestParam boolean enabled) {
+        return ResponseEntity.ok(userService.setUserStatus(id, enabled));
+    }
+
+    //Get BLocked Users
+    @GetMapping("/blocked")
+    public ResponseEntity<List<UserDTO>> getBlockedUsers(){
+        return ResponseEntity.ok(userService.getBlockedUsers());
     }
 
     // Delete user
