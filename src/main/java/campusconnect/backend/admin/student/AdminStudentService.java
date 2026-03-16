@@ -33,8 +33,8 @@ public class AdminStudentService {
                 .userName(student.getUser().getName())
                 .userEmail(student.getUser().getEmail())
                 .userEnabled(student.getUser().isEnabled())
-                .CollegeId(student.getCollege().getId())
-                .CollegeName(student.getCollege().getName())
+                .CollegeId(student.getCollege() != null ? student.getCollege().getId() : null)
+                .CollegeName(student.getCollege() != null ? student.getCollege().getName() : null)
                 .build();
     }
 

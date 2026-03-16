@@ -16,4 +16,6 @@ public interface EventRequestRepository extends JpaRepository<EventRequest, Long
 
     List<EventRequest> findByEventStatus(EventStatus status);
 
+    long countByEventStatus(EventStatus status);
+
 }

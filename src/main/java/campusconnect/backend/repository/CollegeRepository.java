@@ -13,4 +13,6 @@ public interface CollegeRepository extends JpaRepository<College, Long> {
     Optional<College> findByUser(User user);
 
     List<College> findByVerificationStatus(VerificationStatus verificationStatus);
+
+    long countByVerificationStatus(VerificationStatus status);
 }
