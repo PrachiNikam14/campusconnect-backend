@@ -1,10 +1,15 @@
 package campusconnect.backend.college;
 
+import campusconnect.backend.common.storage.dto.FileUploadResponse;
+import campusconnect.backend.common.storage.service.FileUploadService;
 import campusconnect.backend.entity.*;
+import campusconnect.backend.notification.EmailService;
 import campusconnect.backend.repository.*;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import campusconnect.backend.dto.EventPaymentDTO;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,8 +24,10 @@ public class CollegeService {
     private final ServiceRepository serviceRepository;
     private final EventServiceRepository eventServiceRepository;
     private final EventPaymentRepository eventPaymentRepository;
+    private final EmailService emailService;
+    private final FileUploadService  fileUploadService;
 
-    public String registerCollege(CollegeRegistrationRequestDTO request, String email) {
+    public String registerCollege(CollegeRegistrationRequestDTO request, String email) throws MessagingException {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -39,7 +46,122 @@ public class CollegeService {
 
         collegeRepository.save(college);
 
+        String html = """
+            <html>
+            <body style="font-family:Arial;background:#f4f6f8;padding:30px;">
+            <table width="100%" style="max-width:600px;margin:auto;background:white;padding:30px;border-radius:8px;">
+            
+            <tr>
+            <td align="center">
+            <h2 style="color:#4CAF50;">CampusConnect</h2>
+            </td>
+            </tr>
+            
+            <tr>
+            <td>
+            
+            <p>Hello,</p>
+            
+            <p>Your college registration has been submitted successfully.</p>
+            
+            <p style="background:#f1f1f1;padding:15px;border-radius:6px;">
+            Our admin team is reviewing your documents.
+            </p>
+            
+            <hr>
+            
+            <p style="font-size:12px;color:gray;">
+            CampusConnect Team
+            </p>
+            
+            </td>
+            </tr>
+            
+            </table>
+            </body>
+            </html>
+            """;
+
+        emailService.sendHtmlEmail(
+                user.getEmail(),
+                "College Registration Submitted",
+                html
+        );
+
         return "College registration submitted successfully";
+    }
+
+    public College uploadOfficialLetter(String email, MultipartFile file) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        College college = collegeRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("College profile not found"));
+
+        // delete old file
+        if (college.getOfficialLetterPublicId() != null) {
+            fileUploadService.deleteFile(college.getOfficialLetterPublicId());
+        }
+
+        FileUploadResponse response =
+                fileUploadService.uploadFile(
+                        file,
+                        "campusconnect/colleges/documents"
+                );
+
+        college.setOfficialLetterUrl(response.getUrl());
+        college.setOfficialLetterPublicId(response.getPublicId());
+
+        return collegeRepository.save(college);
+    }
+
+    public College uploadNaacCertificate(String email, MultipartFile file) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        College college = collegeRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("College profile not found"));
+
+        if (college.getNaacCertificatePublicId() != null) {
+            fileUploadService.deleteFile(college.getNaacCertificatePublicId());
+        }
+
+        FileUploadResponse response =
+                fileUploadService.uploadFile(
+                        file,
+                        "campusconnect/colleges/documents"
+                );
+
+        college.setNaacCertificateUrl(response.getUrl());
+        college.setNaacCertificatePublicId(response.getPublicId());
+
+        return collegeRepository.save(college);
+    }
+
+    public College uploadLogo(String email, MultipartFile file) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        College college = collegeRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("College profile not found"));
+
+        if (college.getLogoPublicId() != null) {
+            fileUploadService.deleteFile(college.getLogoPublicId());
+        }
+
+        FileUploadResponse response =
+                fileUploadService.uploadFile(
+                        file,
+                        "campusconnect/colleges/logo"
+                );
+
+        college.setLogoUrl(response.getUrl());
+        college.setLogoPublicId(response.getPublicId());
+
+        return collegeRepository.save(college);
     }
 
     public CollegeResponseDTO getCollegeByUser(String email){
@@ -93,7 +215,7 @@ public class CollegeService {
                 .build();
     }
 
-    public EventRequestResponseDTO createEventRequest(EventRequestDTO request, String email){
+    public EventRequestResponseDTO createEventRequest(EventRequestDTO request,MultipartFile banner, String email){
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -117,6 +239,15 @@ public class CollegeService {
             throw new RuntimeException("Event already requested");
         }
 
+        FileUploadResponse bannerResponse = null;
+
+        if (banner != null && !banner.isEmpty()) {
+            bannerResponse = fileUploadService.uploadFile(
+                    banner,
+                    "campusconnect/events/banners"
+            );
+        }
+
         // Create EventRequest
         EventRequest eventRequest = EventRequest.builder()
                 .title(request.getTitle())
@@ -125,6 +256,8 @@ public class CollegeService {
                 .maxParticipants(request.getMaxParticipants())
                 .category(request.getCategory())
                 .eventStatus(EventStatus.PENDING)
+                .bannerUrl(bannerResponse != null ? bannerResponse.getUrl() : null)
+                .bannerPublicId(bannerResponse != null ? bannerResponse.getPublicId() : null)
                 .college(college)
                 .build();
 
@@ -147,6 +280,12 @@ public class CollegeService {
                 eventServiceRepository.save(eventService);
             }
         }
+
+//        emailService.sendEmail(
+//                college.getUser().getEmail(),
+//                "Event Request Created",
+//                "Your event request '" + request.getTitle() + "' has been successfully submitted."
+//        );
 
         return EventRequestResponseDTO.builder()
                 .id(eventRequest.getId())
@@ -293,6 +432,12 @@ public class CollegeService {
 
         eventRequestRepository.save(event);
 
+//        emailService.sendEmail(
+//                college.getUser().getEmail(),
+//                "Event Confirmed",
+//                "Your event '" + event.getTitle() + "' has been confirmed after advance payment."
+//        );
+
         return "Event confirmed after advance payment";
     }
 
@@ -318,6 +463,12 @@ public class CollegeService {
         event.setEventStatus(EventStatus.REJECTED);
 
         eventRequestRepository.save(event);
+
+//        emailService.sendEmail(
+//                college.getUser().getEmail(),
+//                "Event Plan Rejected",
+//                "Your event plan for '" + event.getTitle() + "' has been rejected."
+//        );
 
         return "Event plan rejected";
     }

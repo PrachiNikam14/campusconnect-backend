@@ -26,6 +26,9 @@ public class EventRequest {
 
     private int maxParticipants;
 
+    private String bannerUrl;       // ADD
+    private String bannerPublicId;  // ADD
+
     @Enumerated(EnumType.STRING)
     private EventCategory category;
 

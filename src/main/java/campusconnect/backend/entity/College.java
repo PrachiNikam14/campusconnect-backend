@@ -26,10 +26,14 @@ public class College {
     private String website;
 
     private String officialLetterUrl;
+    private String officialLetterPublicId;   // ADD
 
     private String naacCertificateUrl;
+    private String naacCertificatePublicId;  // ADD
 
     private String logoUrl;
+    private String logoPublicId;
+
 
     @Enumerated(EnumType.STRING)
     private VerificationStatus verificationStatus;

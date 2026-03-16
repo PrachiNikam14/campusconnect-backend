@@ -1,9 +1,12 @@
 package campusconnect.backend.college;
 
 import campusconnect.backend.dto.EventPaymentDTO;
+import campusconnect.backend.entity.College;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,7 +22,7 @@ public class CollegeController {
     public String registerCollege(
             @RequestBody CollegeRegistrationRequestDTO request,
             Authentication authentication
-    ) {
+    ) throws MessagingException {
 
         String email = authentication.getName();
 
@@ -47,12 +50,14 @@ public class CollegeController {
 
     @PostMapping("/event-request")
     public EventRequestResponseDTO createEventRequest(
-            @RequestBody EventRequestDTO request,
-            Authentication authentication){
+            @ModelAttribute EventRequestDTO request,
+            @RequestParam(required = false) MultipartFile banner,
+            Authentication authentication
+    ){
 
         String email = authentication.getName();
 
-        return collegeService.createEventRequest(request, email);
+        return collegeService.createEventRequest(request, banner, email);
     }
 
     @GetMapping("/event-requests")
@@ -120,4 +125,29 @@ public class CollegeController {
         );
     }
 
+    @PostMapping("/upload-official-letter")
+    public College uploadOfficialLetter(
+            @RequestParam MultipartFile file,
+            Authentication authentication
+    ) {
+
+        return collegeService.uploadOfficialLetter(authentication.getName(), file);
+    }
+
+    @PostMapping("/upload-naac")
+    public College uploadNaac(
+            @RequestParam MultipartFile file,
+            Authentication authentication
+    ) {
+
+        return collegeService.uploadNaacCertificate(authentication.getName(), file);
+    }
+    @PostMapping("/upload-logo")
+    public College uploadLogo(
+            @RequestParam MultipartFile file,
+            Authentication authentication
+    ) {
+
+        return collegeService.uploadLogo(authentication.getName(), file);
+    }
 }

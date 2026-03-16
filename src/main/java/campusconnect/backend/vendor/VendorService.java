@@ -1,26 +1,35 @@
 package campusconnect.backend.vendor;
 
+import campusconnect.backend.common.storage.dto.FileUploadResponse;
+import campusconnect.backend.common.storage.service.FileUploadService;
 import campusconnect.backend.entity.User;
 import campusconnect.backend.entity.Vendor;
 import campusconnect.backend.entity.VerificationStatus;
 import campusconnect.backend.repository.UserRepository;
 import campusconnect.backend.repository.VendorRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+
+@RequiredArgsConstructor
 @Service
 public class VendorService {
 
-    @Autowired
-    private UserRepository userRepository;
 
-    @Autowired
-    private VendorRepository vendorRepository;
+    private final UserRepository userRepository;
+    private final VendorRepository vendorRepository;
+
+    private final FileUploadService fileUploadService;
 
     public Vendor registerVendor(String email, VendorProfileRequest request) {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (vendorRepository.findByUser(user).isPresent()) {
+            throw new RuntimeException("Vendor profile already exists");
+        }
 
         Vendor vendor = Vendor.builder()
                 .businessName(request.getBusinessName())
@@ -31,6 +40,27 @@ public class VendorService {
                 .verificationStatus(VerificationStatus.PENDING)
                 .user(user)
                 .build();
+
+        return vendorRepository.save(vendor);
+    }
+
+    public Vendor uploadBusinessLicense(String email, MultipartFile file) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Vendor vendor = vendorRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Vendor profile not found"));
+
+        // Upload to Cloudinary
+        FileUploadResponse response =
+                fileUploadService.uploadFile(
+                        file,
+                        "campusconnect/vendors/documents"
+                );
+
+        vendor.setBusinessLicenseUrl(response.getUrl());
+        vendor.setBusinessLicensePublicId(response.getPublicId());
 
         return vendorRepository.save(vendor);
     }

@@ -27,6 +27,8 @@ public class Vendor {
 
     private String businessLicenseUrl;
 
+    private String businessLicensePublicId;
+
     @Enumerated(EnumType.STRING)
     private VerificationStatus verificationStatus;
 

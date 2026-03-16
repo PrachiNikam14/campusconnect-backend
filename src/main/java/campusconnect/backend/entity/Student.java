@@ -39,8 +39,10 @@ public class Student {
     private String githubUrl;
 
     private String profilePhoto;
+    private String profilePhotoPublicId;  // ADD
 
     private String idCardUrl;
+    private String idCardPublicId;
 
     @Enumerated(EnumType.STRING)
     private VerificationStatus verificationStatus;

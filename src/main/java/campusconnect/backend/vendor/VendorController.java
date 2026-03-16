@@ -4,6 +4,7 @@ import campusconnect.backend.entity.Vendor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/vendor")
@@ -36,5 +37,17 @@ public class VendorController {
     public String getVerificationStatus(Authentication authentication) {
 
         return vendorService.getVerificationStatus(authentication.getName());
+    }
+
+    // NEW API
+    @PostMapping("/upload-license")
+    public Vendor uploadBusinessLicense(
+            @RequestParam("file") MultipartFile file,
+            Authentication authentication
+    ) {
+
+        String email = authentication.getName();
+
+        return vendorService.uploadBusinessLicense(email, file);
     }
 }

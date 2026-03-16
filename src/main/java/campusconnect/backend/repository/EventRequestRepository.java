@@ -6,6 +6,7 @@ import campusconnect.backend.entity.EventStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface EventRequestRepository extends JpaRepository<EventRequest, Long> {
@@ -16,6 +17,5 @@ public interface EventRequestRepository extends JpaRepository<EventRequest, Long
 
     List<EventRequest> findByEventStatus(EventStatus status);
 
-    long countByEventStatus(EventStatus status);
-
+    List<EventRequest> findByEventDateBetween(LocalDateTime tomorrowStart, LocalDateTime tomorrowEnd);
 }

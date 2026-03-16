@@ -1,0 +1,20 @@
+package campusconnect.backend.notification;
+
+public enum NotificationType {
+
+    EVENT_REGISTERED,
+    PAYMENT_SUCCESS,
+    EVENT_REMINDER,
+    EVENT_CONFIRMED,
+    EVENT_REJECTED,
+    EVENT_PLAN_RECEIVED,
+
+    COLLEGE_APPROVED,
+    COLLEGE_REJECTED,
+
+    VENDOR_APPROVED,
+    VENDOR_REJECTED,
+    VENDOR_ASSIGNED,
+
+    FEEDBACK_REQUEST
+}

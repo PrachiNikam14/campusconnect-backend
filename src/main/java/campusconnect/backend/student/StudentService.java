@@ -1,5 +1,7 @@
 package campusconnect.backend.student;
 
+import campusconnect.backend.common.storage.dto.FileUploadResponse;
+import campusconnect.backend.common.storage.service.FileUploadService;
 import campusconnect.backend.entity.*;
 import campusconnect.backend.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,8 @@ public class StudentService {
     private final UserRepository userRepository;
     private final EventRequestRepository eventRequestRepository;
     private final EventRegistrationRepository eventRegistrationRepository;
+    private final FileUploadService fileUploadService;
+
 
     private static final String UPLOAD_DIR = "uploads/";
 
@@ -55,6 +59,61 @@ public class StudentService {
         eventRegistrationRepository.save(registration);
 
         return "Registered Successfully";
+    }
+
+
+
+    public Student uploadDocuments(String email,
+                                   MultipartFile profilePhoto,
+                                   MultipartFile idCard) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Student student = studentRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        FileUploadResponse profile =
+                fileUploadService.uploadFile(profilePhoto,
+                        "campusconnect/students/profile");
+
+        FileUploadResponse id =
+                fileUploadService.uploadFile(idCard,
+                        "campusconnect/students/documents");
+
+        student.setProfilePhoto(profile.getUrl());
+        student.setProfilePhotoPublicId(profile.getPublicId());
+
+        student.setIdCardUrl(id.getUrl());
+        student.setIdCardPublicId(id.getPublicId());
+
+        return studentRepository.save(student);
+    }
+
+
+    public Student updateProfilePhoto(String email, MultipartFile file) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Student student = studentRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        // delete old image
+        if (student.getProfilePhotoPublicId() != null) {
+            fileUploadService.deleteFile(student.getProfilePhotoPublicId());
+        }
+
+        FileUploadResponse response =
+                fileUploadService.uploadFile(
+                        file,
+                        "campusconnect/students/profile"
+                );
+
+        student.setProfilePhoto(response.getUrl());
+        student.setProfilePhotoPublicId(response.getPublicId());
+
+        return studentRepository.save(student);
     }
 
     // ------------------- STUDENT PROFILE -------------------

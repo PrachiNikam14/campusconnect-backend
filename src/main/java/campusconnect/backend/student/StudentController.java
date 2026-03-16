@@ -1,11 +1,13 @@
 package campusconnect.backend.student;
 
 import campusconnect.backend.entity.EventRequest;
+import campusconnect.backend.entity.Student;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -79,5 +81,30 @@ public class StudentController {
         List<EventRequest> registeredEvents = studentService.getRegisteredEvents(email);
 
         return ResponseEntity.ok(registeredEvents);
+    }
+
+    @PostMapping("/upload-documents")
+    public Student uploadDocuments(
+            @RequestParam MultipartFile profilePhoto,
+            @RequestParam MultipartFile idCard,
+            Authentication authentication
+    ) {
+        return studentService.uploadDocuments(
+                authentication.getName(),
+                profilePhoto,
+                idCard
+        );
+    }
+
+    @PostMapping("/update-profile-photo")
+    public Student updateProfilePhoto(
+            @RequestParam MultipartFile file,
+            Authentication authentication
+    ) {
+
+        return studentService.updateProfilePhoto(
+                authentication.getName(),
+                file
+        );
     }
 }
