@@ -29,6 +29,8 @@ public class Vendor {
 
     private String businessLicensePublicId;
 
+    private String brochurePdfUrl;
+
     @Enumerated(EnumType.STRING)
     private VerificationStatus verificationStatus;
 

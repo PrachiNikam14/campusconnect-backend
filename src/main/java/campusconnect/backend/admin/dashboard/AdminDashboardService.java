@@ -29,7 +29,8 @@ public class AdminDashboardService {
         dto.setPendingColleges(collegeRepository.countByVerificationStatus(VerificationStatus.PENDING));
         dto.setPendingVendors(vendorRepository.countByVerificationStatus(VerificationStatus.PENDING));
         dto.setPendingStudents(studentRepository.countByVerificationStatus(VerificationStatus.PENDING));
-        dto.setPendingEventRequests(eventRequestRepository.countByEventStatus(EventStatus.PENDING));
+        dto.setPendingEventRequests(eventRequestRepository
+                .countByEventStatus(EventStatus.PENDING));
 
         return dto;
     }

@@ -18,4 +18,6 @@ public interface EventRequestRepository extends JpaRepository<EventRequest, Long
     List<EventRequest> findByEventStatus(EventStatus status);
 
     List<EventRequest> findByEventDateBetween(LocalDateTime tomorrowStart, LocalDateTime tomorrowEnd);
+
+    long countByEventStatus(EventStatus eventStatus);
 }
