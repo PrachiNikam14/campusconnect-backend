@@ -4,6 +4,7 @@ import jakarta.persistence.ElementCollection;
 import lombok.*;
 import jakarta.validation.constraints.*;
 import org.springframework.web.multipart.MultipartFile;
+import campusconnect.backend.entity.VerificationStatus;
 
 import java.util.List;
 
@@ -12,6 +13,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StudentProfileDTO {
+
+    private String userName;
 
     @Size(max = 300)
     private String bio;
@@ -32,4 +35,6 @@ public class StudentProfileDTO {
     private int year;
 
     private MultipartFile profilePhoto;
+
+    private VerificationStatus verificationStatus = VerificationStatus.PENDING;
 }

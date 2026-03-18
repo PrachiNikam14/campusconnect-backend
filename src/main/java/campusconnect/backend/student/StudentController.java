@@ -83,28 +83,14 @@ public class StudentController {
         return ResponseEntity.ok(registeredEvents);
     }
 
-    @PostMapping("/upload-documents")
-    public Student uploadDocuments(
-            @RequestParam MultipartFile profilePhoto,
-            @RequestParam MultipartFile idCard,
-            Authentication authentication
-    ) {
-        return studentService.uploadDocuments(
-                authentication.getName(),
-                profilePhoto,
-                idCard
-        );
-    }
+    //---------------  STUDENT FEEDBACK  ---------------------
+    @PostMapping("/feedback")
+    public String giveFeedback(
+            @RequestParam Long studentId,
+            @RequestParam Long eventId,
+            @RequestParam String message,
+            @RequestParam int rating){
 
-    @PostMapping("/update-profile-photo")
-    public Student updateProfilePhoto(
-            @RequestParam MultipartFile file,
-            Authentication authentication
-    ) {
-
-        return studentService.updateProfilePhoto(
-                authentication.getName(),
-                file
-        );
+        return studentService.submitFeedback(studentId,eventId,message,rating);
     }
 }

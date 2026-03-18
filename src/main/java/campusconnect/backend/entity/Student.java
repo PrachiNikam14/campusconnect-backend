@@ -10,12 +10,14 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.Builder;
 
 import java.util.List;
 
 @Entity
 @Getter
 @Setter
+@Builder
 public class Student {
 
     @Id
@@ -30,7 +32,7 @@ public class Student {
     
     private String bio;
     
-    private String skills;
+    private List<String> skills;
     
     private String hobbies;
 
@@ -45,7 +47,8 @@ public class Student {
     private String idCardPublicId;
 
     @Enumerated(EnumType.STRING)
-    private VerificationStatus verificationStatus;
+    @Builder.Default
+    private VerificationStatus verificationStatus = VerificationStatus.PENDING;
 
     @OneToOne
     private User user;

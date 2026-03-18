@@ -11,8 +11,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +26,8 @@ StudentService {
     private final FileUploadService fileUploadService;
 
 
+    private final FeedbackRepository feedbackRepository;
+
     private static final String UPLOAD_DIR = "uploads/";
 
     // ------------------- EVENT REGISTRATION -------------------
@@ -37,24 +39,44 @@ StudentService {
                         .orElseThrow(() -> new RuntimeException("User not found"))
         ).orElseThrow(() -> new RuntimeException("Student profile not found"));
 
+        // 🔴 Important check
+        if (student.getVerificationStatus() != VerificationStatus.APPROVED) {
+            throw new RuntimeException("Your profile is not approved. You cannot register for events.");
+        }
+
         EventRequest event = eventRequestRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
+
+        // PROFILE APPROVAL CHECK
+        if(student.getVerificationStatus() != VerificationStatus.APPROVED){
+            return "Your profile is pending admin verification";
+        }
 
         // Duplicate check
         if(eventRegistrationRepository.findByStudentIdAndEventId(student.getId(), event.getId()).isPresent()){
             return "Already Registered";
         }
 
+        // ----------- LIMIT CHECK (NEW) -----------
+        Long registeredCount = eventRegistrationRepository.countByEvent_Id(event.getId());
+
+        if(registeredCount >= event.getMaxParticipants()){
+            event.setEventStatus(EventStatus.BOOKED);
+            eventRequestRepository.save(event);
+            return "Registration Closed - Limit Reached";
+        }
+        // ---------- PAYMENT CHECK ------------
+
         // Payment check
         if(event.isPaid()){
-            return "Payment Required"; // 🔒 Don't register yet
+            return "Payment Required";
         }
 
         EventRegistration registration = EventRegistration.builder()
                 .student(student)
                 .event(event)
-                .paymentDone(!event.isPaid()) // free = true, paid = false
-                .paidAmount(event.isPaid() ? 0.0 : 0.0)
+                .paymentDone(!event.isPaid())
+                .paidAmount(0.0)
                 .build();
 
         eventRegistrationRepository.save(registration);
@@ -128,8 +150,10 @@ StudentService {
             throw new RuntimeException("Student profile already exists");
         }
 
-        Student student = new Student();
-        student.setUser(user);
+        Student student = Student.builder()
+                .user(user)
+                .verificationStatus(VerificationStatus.PENDING)
+                .build();
 
         updateStudentFields(student, request);
 
@@ -186,7 +210,9 @@ StudentService {
         if (photo != null && !photo.isEmpty()) {
             try {
                 File directory = new File(UPLOAD_DIR);
-                if (!directory.exists()) directory.mkdir();
+                if (!directory.exists()) {
+                    directory.mkdir();
+                }
 
                 String fileName = System.currentTimeMillis() + "_" + photo.getOriginalFilename();
                 String filePath = UPLOAD_DIR + fileName;
@@ -202,13 +228,15 @@ StudentService {
 
     private StudentProfileDTO mapToDTO(Student student) {
         return StudentProfileDTO.builder()
+                .userName(student.getUser().getName())
                 .department(student.getDepartment())
                 .year(student.getYear())
                 .bio(student.getBio())
-                .skills(Collections.singletonList(student.getSkills()))
+                .skills(student.getSkills())
                 .hobbies(student.getHobbies())
                 .linkedinUrl(student.getLinkedinUrl())
                 .githubUrl(student.getGithubUrl())
+                .verificationStatus(student.getVerificationStatus())
                 .build();
     }
 
@@ -224,5 +252,36 @@ StudentService {
                 .filter(er -> er.getStudent().getId().equals(student.getId()))
                 .map(EventRegistration::getEvent)
                 .toList();
+    }
+
+    //--------------STUDENT FEEDBACK----------------
+    public String submitFeedback(Long studentId, Long eventId, String message, int rating){
+
+        Optional<EventRegistration> registration =
+                eventRegistrationRepository.findByStudentIdAndEventId(studentId, eventId);
+
+        // Check student attended event
+        if(registration.isEmpty()){
+            throw new RuntimeException("You did not attend this event");
+        }
+
+        // Check feedback already given
+        if(feedbackRepository.existsByStudentIdAndEventId(studentId, eventId)){
+            throw new RuntimeException("You already submitted feedback");
+        }
+
+        Student student = studentRepository.findById(studentId).orElseThrow();
+        EventRequest event = eventRequestRepository.findById(eventId).orElseThrow();
+
+        Feedback feedback = Feedback.builder()
+                .student(student)
+                .event(event)
+                .message(message)
+                .rating(rating)
+                .build();
+
+        feedbackRepository.save(feedback);
+
+        return "Feedback submitted successfully";
     }
 }

@@ -4,5 +4,6 @@ package campusconnect.backend.entity;
         PLANNED,    // Admin given the event flow
         CONFIRMED,  // College confirmed
         REJECTED,   // College/Admin rejected
-        RESCHEDULED // College wants to change date
+        RESCHEDULED, // College wants to change date
+        BOOKED // Student booked the event
     }

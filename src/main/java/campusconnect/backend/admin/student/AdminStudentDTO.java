@@ -19,7 +19,7 @@ public class AdminStudentDTO {
     private String department;
     private int year;
     private String bio;
-    private String skills;
+    private List<String> skills;
     private String hobbies;
     private String linkedinUrl;
     private String githubUrl;

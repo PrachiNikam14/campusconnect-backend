@@ -14,4 +14,5 @@ public interface EventRegistrationRepository extends JpaRepository<EventRegistra
 
     Page<EventRegistration> findByEvent_Id(Long eventId, Pageable pageable);
     Long countByEvent_Id(Long eventId);
+
 }

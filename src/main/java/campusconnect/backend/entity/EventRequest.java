@@ -46,4 +46,5 @@ public class EventRequest {
 
     @OneToMany(mappedBy = "eventRequest", cascade = CascadeType.ALL)
     private List<EventService> services;
+
 }
