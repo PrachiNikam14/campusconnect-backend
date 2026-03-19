@@ -1,8 +1,11 @@
 package campusconnect.backend.repository;
 
+import campusconnect.backend.entity.EventRegistration;
 import campusconnect.backend.entity.EventRequest;
 import campusconnect.backend.entity.College;
 import campusconnect.backend.entity.EventStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -15,9 +18,11 @@ public interface EventRequestRepository extends JpaRepository<EventRequest, Long
 
     boolean existsByTitleAndCollege(String title, College college);
 
-    List<EventRequest> findByEventStatus(EventStatus status);
+    long countByEventStatus(EventStatus eventStatus);
+
+    List<EventRequest> findByEventStatus(EventStatus eventStatus);
 
     List<EventRequest> findByEventDateBetween(LocalDateTime tomorrowStart, LocalDateTime tomorrowEnd);
 
-    long countByEventStatus(EventStatus eventStatus);
+
 }
