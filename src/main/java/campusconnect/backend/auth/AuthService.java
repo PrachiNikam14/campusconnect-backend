@@ -1,6 +1,8 @@
 package campusconnect.backend.auth;
 
-import campusconnect.backend.dto.*;
+import campusconnect.backend.dto.AuthResponse;
+import campusconnect.backend.dto.LoginRequest;
+import campusconnect.backend.dto.RegisterRequest;
 import campusconnect.backend.entity.Role;
 import campusconnect.backend.entity.User;
 import campusconnect.backend.notification.NotificationFacade;
@@ -24,9 +26,10 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final NotificationFacade notificationFacade;
 
-    public void register(RegisterRequest request) {
 
-        if(request.getRole() == Role.ADMIN){
+    public User register(RegisterRequest request) {
+
+        if (request.getRole() == Role.ADMIN) {
             throw new RuntimeException("Admin cannot register");
         }
 
@@ -34,13 +37,13 @@ public class AuthService {
             throw new RuntimeException("Role is required");
         }
 
-        if(userRepository.findByEmail(request.getEmail()).isPresent()){
-            throw new RuntimeException("Email already registered");
+        if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+            throw new RuntimeException("Email is required");
         }
 
         User user = User.builder()
                 .name(request.getName())
-                .email(request.getEmail())
+                .email(request.getEmail().trim().toLowerCase())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
                 .enabled(true)
@@ -57,7 +60,10 @@ public class AuthService {
                 NotificationType.USER_REGISTERED,
                 vars,
                 false
-        );    }
+        );
+
+        return user;
+    }
 
     public AuthResponse login(LoginRequest request) {
 
@@ -70,6 +76,6 @@ public class AuthService {
 
         String token = jwtUtil.generateToken(user.getEmail());
 
-        return new AuthResponse(token);
+        return new AuthResponse(token, user.getRole());
     }
 }
