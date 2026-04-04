@@ -1,7 +1,9 @@
 package campusconnect.backend.student;
 
+import jakarta.persistence.ElementCollection;
 import lombok.*;
 import jakarta.validation.constraints.*;
+import org.springframework.web.multipart.MultipartFile;
 import campusconnect.backend.entity.VerificationStatus;
 
 import java.util.List;
@@ -22,6 +24,7 @@ public class StudentResponseDTO {
     @Size(max = 300)
     private String bio;
 
+    @ElementCollection
     private List<String> skills;
 
     private String hobbies;
@@ -37,7 +40,7 @@ public class StudentResponseDTO {
 
     @Min(1)
     @Max(4)
-    private int year;
+    private Integer year;
 
     private String profilePhoto;
 

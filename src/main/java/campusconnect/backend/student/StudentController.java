@@ -9,8 +9,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-
-@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/student")
 @RequiredArgsConstructor
@@ -32,7 +30,11 @@ public class StudentController {
 
     // ------------------- GET STUDENT PROFILE -------------------
     @GetMapping("/profile")
-    public ResponseEntity<StudentResponseDTO> getProfile(Authentication authentication) {
+    public ResponseEntity<?> getProfile(Authentication authentication) {
+
+        if (authentication == null) {
+            return ResponseEntity.status(401).body("Unauthorized - token missing or invalid");
+        }
 
         String email = authentication.getName();
         StudentResponseDTO response = studentService.getStudentProfile(email);
@@ -41,14 +43,18 @@ public class StudentController {
 
     // ------------------- UPDATE STUDENT PROFILE -------------------
     @PatchMapping(value = "/profile", consumes = "multipart/form-data")
-    public ResponseEntity<StudentResponseDTO> updateProfile(
-            @Valid @ModelAttribute StudentRequestDTO request,
+    public ResponseEntity<?> updateProfile(
+            @ModelAttribute StudentRequestDTO request,
             Authentication authentication
     ) {
-
-        String email = authentication.getName();
-        StudentResponseDTO response = studentService.updateStudentProfile(request, email);
-        return ResponseEntity.ok(response);
+        try {
+            String email = authentication.getName();
+            StudentResponseDTO response = studentService.updateStudentProfile(request, email);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace(); // 🔥 VERY IMPORTANT
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     // ------------------- GET CONFIRMED EVENTS -------------------

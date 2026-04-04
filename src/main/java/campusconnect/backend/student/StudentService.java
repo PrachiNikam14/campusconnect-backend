@@ -112,9 +112,11 @@ public class StudentService {
         return "Registered Successfully";
     }
 
+
+
     public void uploadDocuments(Student student,
-                                   MultipartFile profilePhoto,
-                                   MultipartFile idCard) {
+                                MultipartFile profilePhoto,
+                                MultipartFile idCard) {
 
 //        User user = userRepository.findByEmail(email)
 //                .orElseThrow(() -> new RuntimeException("User not found"));
@@ -141,7 +143,6 @@ public class StudentService {
             student.setIdCardPublicId(id.getPublicId());
         }
     }
-
 
     public Student updateProfilePhoto(String email, MultipartFile file) {
 
@@ -245,35 +246,16 @@ public class StudentService {
                 .orElseThrow(() -> new RuntimeException("College not found"));
 
         student.setCollege(college);
-
-
-//        MultipartFile photo = request.getProfilePhoto();
-//
-//        if (photo != null && !photo.isEmpty()) {
-//            try {
-//                File directory = new File(UPLOAD_DIR);
-//                if (!directory.exists()) directory.mkdir();
-//
-//                String fileName = System.currentTimeMillis() + "_" + photo.getOriginalFilename();
-//                String filePath = UPLOAD_DIR + fileName;
-//
-//                photo.transferTo(new File(filePath));
-//                student.setProfilePhoto(filePath);
-//
-//            } catch (IOException e) {
-//                throw new RuntimeException("Failed to upload profile photo");
-//            }
-//        }
     }
 
     private StudentResponseDTO mapToDTO(Student student) {
         return StudentResponseDTO.builder()
-                .userId(student.getUser().getId())
-                .userName(student.getUser().getName())
-                .userEmail(student.getUser().getEmail())
+                .userId(student.getUser() != null ? student.getUser().getId() : null)
+                .userName(student.getUser() != null ? student.getUser().getName() : null)
+                .userEmail(student.getUser() != null ? student.getUser().getEmail() : null)
 
-                .collegeId(student.getCollege().getId())
-                .collegeName(student.getCollege().getName())
+                .collegeId(student.getCollege() != null ? student.getCollege().getId() : null)
+                .collegeName(student.getCollege() != null ? student.getCollege().getName() : null)
 
                 .bio(student.getBio())
                 .skills(student.getSkills())
