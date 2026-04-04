@@ -13,4 +13,5 @@ public interface EventServiceRepository extends JpaRepository<EventService, Long
 
     Optional<EventService> findByEventRequestAndServiceType(EventRequest eventRequest, ServiceType service);
     List<EventService> findByVendor(Vendor vendor);
+    List<EventService> findByEventRequest(EventRequest event);
 }

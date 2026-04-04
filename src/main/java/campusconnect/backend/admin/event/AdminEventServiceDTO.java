@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 public class AdminEventServiceDTO {
 
     private Long id;
+    private Long eventId;
+    private Long serviceTypeId;
     private String title;
     private String serviceName;
     private String vendor;

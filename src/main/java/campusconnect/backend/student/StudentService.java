@@ -173,6 +173,10 @@ public class StudentService {
         return studentRepository.save(student);
     }
 
+    public List<College> getAllColleges() {
+        return collegeRepository.findAll();
+    }
+
     // ------------------- STUDENT PROFILE -------------------
     @Transactional
     public StudentResponseDTO createStudentProfile(StudentRequestDTO request, String email) {
