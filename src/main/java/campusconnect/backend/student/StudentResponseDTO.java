@@ -35,7 +35,6 @@ public class StudentResponseDTO {
 
     private String rollNumber;
 
-    @NotBlank
     private String department;
 
     @Min(1)

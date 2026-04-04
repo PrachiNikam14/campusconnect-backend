@@ -35,6 +35,11 @@ public class AdminEventController {
         return ResponseEntity.ok(adminEventService.updateStatus(id, status));
     }
 
+    @GetMapping("/{eventId}/services")
+    public List<AdminEventServiceDTO> getServicesOfEvent(@PathVariable Long eventId) {
+        return adminEventService.getServicesOfEvent(eventId);
+    }
+
     @PatchMapping("/service-vendor/{eventId}/{serviceId}")
     public ResponseEntity<AdminEventServiceDTO> assignVendor(@PathVariable Long eventId,
                                                      @PathVariable Long serviceId,

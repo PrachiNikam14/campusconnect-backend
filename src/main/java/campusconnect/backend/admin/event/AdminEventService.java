@@ -116,6 +116,21 @@ public class AdminEventService {
         return mapToDTO(request);
     }
 
+    // Get all services of a specific event
+    public List<AdminEventServiceDTO> getServicesOfEvent(Long eventId) {
+        // Fetch the event
+        EventRequest event = eventRequestRepo.findById(eventId)
+                .orElseThrow(() -> new RuntimeException("Event not found"));
+
+        // Fetch all EventService records linked to this event
+        List<EventService> eventServices = eventServiceRepo.findByEventRequest(event);
+
+        // Map to DTO
+        return eventServices.stream()
+                .map(this::mapToEventServiceDTO)
+                .collect(Collectors.toList());
+    }
+
     //service-vendor
     public AdminEventServiceDTO assignVendor(Long eventId, Long serviceId, Long vendorId) {
 
@@ -208,8 +223,10 @@ public class AdminEventService {
 
     public AdminEventServiceDTO mapToEventServiceDTO(EventService eventService){
         return AdminEventServiceDTO.builder()
-                .id(eventService.getId()).
-                title(eventService.getEventRequest().getTitle())
+                .id(eventService.getId())
+                .eventId(eventService.getEventRequest().getId())
+                .serviceTypeId(eventService.getServiceType().getId())
+                .title(eventService.getEventRequest().getTitle())
                 .serviceName(eventService.getServiceType().getService())
                 .vendor(eventService.getVendor() != null ? eventService.getVendor().getBusinessName() : null)
                 .build();

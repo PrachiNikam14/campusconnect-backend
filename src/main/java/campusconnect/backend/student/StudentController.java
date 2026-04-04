@@ -1,6 +1,8 @@
 package campusconnect.backend.student;
 
+import campusconnect.backend.entity.College;
 import campusconnect.backend.entity.EventRequest;
+import campusconnect.backend.repository.CollegeRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,11 @@ import java.util.List;
 public class StudentController {
 
     private final StudentService studentService;
+
+    @GetMapping("/colleges")
+    public ResponseEntity<List<College>> getAllColleges() {
+        return ResponseEntity.ok(studentService.getAllColleges());
+    }
 
     // ------------------- CREATE STUDENT PROFILE -------------------
     @PostMapping(value = "/profile", consumes = "multipart/form-data")
