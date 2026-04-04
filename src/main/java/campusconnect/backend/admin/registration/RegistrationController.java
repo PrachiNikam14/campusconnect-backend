@@ -12,7 +12,7 @@ public class RegistrationController {
 
     private final RegistrationService registrationService;
 
-    @GetMapping("/registrations")
+    @GetMapping()
     public Page<RegistrationDTO> getRegistrations(
             @RequestParam(required = false) Long eventId,
             Pageable pageable) {
@@ -20,14 +20,14 @@ public class RegistrationController {
         return registrationService.getRegistrations(eventId, pageable);
     }
 
-    @GetMapping("/registrations/count")
+    @GetMapping("/count")
     public long getRegistrationsCount(
             @RequestParam(required = false) Long eventId) {
 
         return registrationService.getRegistrationsCount(eventId);
     }
 
-    @GetMapping("/registrations/{registrationId}")
+    @GetMapping("/{registrationId}")
     public RegistrationDTO getRegistration(
             @PathVariable Long registrationId) {
 
