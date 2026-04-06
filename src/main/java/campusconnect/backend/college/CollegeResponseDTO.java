@@ -16,7 +16,15 @@ public class CollegeResponseDTO {
     private String universityname;
     private String city;
     private String website;
+
     private String logoUrl;
+
+    // 🔥 ADD THESE
+    private String naacCertificateUrl;
+    private String officialLetterUrl;
+
     private String verificationStatus;
 
+    private String email;
+    private String createdAt;
 }

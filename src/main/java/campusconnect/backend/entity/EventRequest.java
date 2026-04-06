@@ -38,7 +38,7 @@ public class EventRequest {
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean isPaid = false; // true = paid, false = free
 
-    @Column(nullable = false, columnDefinition = "double precision default 0")
+    @Column(nullable = true, columnDefinition = "double precision default 0")
     private Double price; // applicable only if isPaid = true
 
     @ManyToOne

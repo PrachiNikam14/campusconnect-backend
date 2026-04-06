@@ -9,6 +9,8 @@ import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import campusconnect.backend.dto.EventPaymentDTO;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
@@ -97,7 +99,12 @@ public class CollegeService {
         return "College registration submitted successfully";
     }
 
-    public College uploadOfficialLetter(String email, MultipartFile file) {
+
+    public College uploadDocument(
+            String email,
+            MultipartFile file,
+            String type   // LOGO / NAAC / LETTER
+    ) {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -105,67 +112,52 @@ public class CollegeService {
         College college = collegeRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("College profile not found"));
 
-        // delete old file
-        if (college.getOfficialLetterPublicId() != null) {
-            fileUploadService.deleteFile(college.getOfficialLetterPublicId());
+        // 🔥 decide folder based on type
+        String folder = switch (type.toUpperCase()) {
+            case "LOGO" -> "campusconnect/colleges/logo";
+            case "NAAC" -> "campusconnect/colleges/documents";
+            case "LETTER" -> "campusconnect/colleges/documents";
+            default -> throw new RuntimeException("Invalid document type");
+        };
+
+        // 🔥 delete old file
+        switch (type.toUpperCase()) {
+            case "LOGO" -> {
+                if (college.getLogoPublicId() != null) {
+                    fileUploadService.deleteFile(college.getLogoPublicId());
+                }
+            }
+            case "NAAC" -> {
+                if (college.getNaacCertificatePublicId() != null) {
+                    fileUploadService.deleteFile(college.getNaacCertificatePublicId());
+                }
+            }
+            case "LETTER" -> {
+                if (college.getOfficialLetterPublicId() != null) {
+                    fileUploadService.deleteFile(college.getOfficialLetterPublicId());
+                }
+            }
         }
 
+        // 🔥 upload
         FileUploadResponse response =
-                fileUploadService.uploadFile(
-                        file,
-                        "campusconnect/colleges/documents"
-                );
+                fileUploadService.uploadFile(file, folder);
 
-        college.setOfficialLetterUrl(response.getUrl());
-        college.setOfficialLetterPublicId(response.getPublicId());
-
-        return collegeRepository.save(college);
-    }
-
-    public College uploadNaacCertificate(String email, MultipartFile file) {
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        College college = collegeRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("College profile not found"));
-
-        if (college.getNaacCertificatePublicId() != null) {
-            fileUploadService.deleteFile(college.getNaacCertificatePublicId());
+        // 🔥 set values
+        switch (type.toUpperCase()) {
+            case "LOGO" -> {
+                college.setLogoUrl(response.getUrl());
+                college.setLogoPublicId(response.getPublicId());
+            }
+            case "NAAC" -> {
+                college.setNaacCertificateUrl(response.getUrl());
+                college.setNaacCertificatePublicId(response.getPublicId());
+            }
+            case "LETTER" -> {
+                college.setOfficialLetterUrl(response.getUrl());
+                college.setOfficialLetterPublicId(response.getPublicId());
+            }
         }
-
-        FileUploadResponse response =
-                fileUploadService.uploadFile(
-                        file,
-                        "campusconnect/colleges/documents"
-                );
-
-        college.setNaacCertificateUrl(response.getUrl());
-        college.setNaacCertificatePublicId(response.getPublicId());
-
-        return collegeRepository.save(college);
-    }
-
-    public College uploadLogo(String email, MultipartFile file) {
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        College college = collegeRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("College profile not found"));
-
-        if (college.getLogoPublicId() != null) {
-            fileUploadService.deleteFile(college.getLogoPublicId());
-        }
-
-        FileUploadResponse response =
-                fileUploadService.uploadFile(
-                        file,
-                        "campusconnect/colleges/logo"
-                );
-
-        college.setLogoUrl(response.getUrl());
-        college.setLogoPublicId(response.getPublicId());
 
         return collegeRepository.save(college);
     }
@@ -178,6 +170,8 @@ public class CollegeService {
         College college = collegeRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("College not found"));
 
+        System.out.println("COLLEGE: " + college);
+
         return CollegeResponseDTO.builder()
                 .id(college.getId())
                 .name(college.getName())
@@ -185,7 +179,14 @@ public class CollegeService {
                 .city(college.getCity())
                 .website(college.getWebsite())
                 .logoUrl(college.getLogoUrl())
+                .naacCertificateUrl(college.getNaacCertificateUrl())
+                .officialLetterUrl(college.getOfficialLetterUrl())
                 .verificationStatus(college.getVerificationStatus().name())
+
+                // 🔥 ADD THESE
+                .email(college.getUser().getEmail())
+                .createdAt(college.getUser().getCreatedAt().toLocalDate().toString())
+
                 .build();
     }
 
@@ -237,9 +238,9 @@ public class CollegeService {
             throw new RuntimeException("Event date must be in future");
         }
 
-        if(request.getMaxParticipants() <= 0){
-            throw new RuntimeException("Participants must be positive");
-        }
+//        if(request.getMaxParticipants() <= 0){
+//            throw new RuntimeException("Participants must be positive");
+//        }
 
         if(eventRequestRepository.existsByTitleAndCollege(request.getTitle(), college)){
             throw new RuntimeException("Event already requested");
@@ -261,6 +262,11 @@ public class CollegeService {
                 .eventDate(request.getEventDate())
                 .maxParticipants(request.getMaxParticipants())
                 .category(request.getCategory())
+
+                // ✅ FIXED HERE
+                .isPaid(request.isPaid())
+                .price(request.isPaid() ? request.getPrice() : 0)
+
                 .eventStatus(EventStatus.PENDING)
                 .bannerUrl(bannerResponse != null ? bannerResponse.getUrl() : null)
                 .bannerPublicId(bannerResponse != null ? bannerResponse.getPublicId() : null)
@@ -305,9 +311,19 @@ public class CollegeService {
                 .description(eventRequest.getDescription())
                 .eventDate(eventRequest.getEventDate())
                 .maxParticipants(eventRequest.getMaxParticipants())
-                .category(eventRequest.getCategory().name())
-                .status(eventRequest.getEventStatus().name())
+
+                .category(eventRequest.getCategory() != null
+                        ? eventRequest.getCategory().name()
+                        : null)
+
+                .status(eventRequest.getEventStatus() != null
+                        ? eventRequest.getEventStatus().name()
+                        : null)
+
                 .collegeName(college.getName())
+                .isPaid(eventRequest.isPaid())
+                .price(eventRequest.getPrice() != null ? eventRequest.getPrice() : 0)
+                .bannerUrl(eventRequest.getBannerUrl())
                 .build();
     }
 
@@ -327,9 +343,21 @@ public class CollegeService {
                         .description(event.getDescription())
                         .eventDate(event.getEventDate())
                         .maxParticipants(event.getMaxParticipants())
-                        .category(event.getCategory().name())
-                        .status(event.getEventStatus().name())
+
+                        .category(event.getCategory() != null
+                                ? event.getCategory().name()
+                                : "UNKNOWN")
+
+                        .status(event.getEventStatus() != null
+                                ? event.getEventStatus().name()
+                                : "PENDING")
+
                         .collegeName(college.getName())
+
+                        .isPaid(event.isPaid()) // ✅ FIXED
+                        .price(event.getPrice() != null ? event.getPrice() : 0)
+                        .bannerUrl(event.getBannerUrl())
+
                         .build())
                 .toList();
     }
@@ -465,8 +493,6 @@ public class CollegeService {
                 true
         );
 
-
-
         return "Event confirmed after advance payment";
     }
 
@@ -548,4 +574,6 @@ public class CollegeService {
 
         return "Event reschedule request sent";
     }
+
+
 }

@@ -30,6 +30,10 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
 
+                // 🔥 ADD THESE TWO LINES
+                .httpBasic(httpBasic -> httpBasic.disable())
+                .formLogin(form -> form.disable())
+
                 .authorizeHttpRequests(auth -> auth
 
                         .requestMatchers("/api/auth/**").permitAll()
@@ -38,7 +42,6 @@ public class SecurityConfig {
                         .requestMatchers("/college/**").hasAuthority("COLLEGE")
                         .requestMatchers("/admin/**").hasAuthority("ADMIN")
                         .requestMatchers("/events/**").hasAuthority("STUDENT")
-
                         .requestMatchers("/vendor/**").hasAuthority("VENDOR")
 
                         .requestMatchers("/test/**").permitAll()

@@ -4,6 +4,8 @@
     import jakarta.persistence.*;
     import lombok.*;
 
+    import java.time.LocalDateTime;
+
     @Entity
     @Table(name = "users")
 
@@ -34,5 +36,13 @@
         private Role role;
 
         private boolean enabled = true;
+
+        @Column(updatable = false)
+        private LocalDateTime createdAt;
+
+        @PrePersist
+        protected void onCreate() {
+            this.createdAt = LocalDateTime.now();
+        }
 
     }

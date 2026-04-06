@@ -30,6 +30,7 @@ public class Vendor {
     private String businessLicensePublicId;
 
     private String brochurePdfUrl;
+    private String brochurePublicId;
 
     @Enumerated(EnumType.STRING)
     private VerificationStatus verificationStatus;

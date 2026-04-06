@@ -20,4 +20,8 @@ public class EventRequestDTO {
     private EventCategory category;
 
     private List<Long> serviceIds; // services required
+
+    private boolean isPaid;
+    private Double price;
+
 }

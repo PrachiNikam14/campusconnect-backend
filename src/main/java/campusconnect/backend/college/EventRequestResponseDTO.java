@@ -17,5 +17,8 @@ public class EventRequestResponseDTO {
     private String category;
     private String status;
     private String collegeName;
+    private Double price;
+    private boolean isPaid;
+    private String bannerUrl;
 
 }
