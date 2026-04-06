@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +67,20 @@ public class AdminEventService {
             events = eventRequestRepo.findByEventStatus(status);
         else
             events = eventRequestRepo.findAll();
+
+        LocalDateTime now = LocalDateTime.now();
+
+        List<EventRequest> confirmedEvents = eventRequestRepo.findByEventStatus(EventStatus.CONFIRMED);
+
+        List<EventRequest> updatedEvents = confirmedEvents.stream()
+                .filter(event -> event.getEventDate().isBefore(now))
+                .peek(event -> event.setEventStatus(EventStatus.COMPLETED))
+                .collect(Collectors.toList());
+
+        // ✅ Save only if needed
+        if(!updatedEvents.isEmpty()){
+            eventRequestRepo.saveAll(updatedEvents);
+        }
 
         return events.stream()
                 .map(this::mapToDTO)
