@@ -276,26 +276,26 @@ public class StudentController {
         return ResponseEntity.ok(response);
     }
 
-    //----------------------- FEEDBACK ----------------------------
     @PostMapping("/feedback")
     public ResponseEntity<?> giveFeedback(
             @RequestBody FeedbackRequestDTO dto,
             Authentication auth) {
-        String email = auth.getName();
-        String response = studentService.giveFeedback(dto, email);
-        return ResponseEntity.ok(response);
+        try {
+            String email = auth.getName();
+            System.out.println("Feedback request from: " + email + " | DTO: " + dto);
+            String response = studentService.giveFeedback(dto, email);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            System.out.println("ERROR: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
-    // ✅ GET FEEDBACK API
-    //----------------------- FEEDBACK ----------------------------
+    // GET — Fetch my feedback list
     @GetMapping("/feedback")
     public ResponseEntity<?> getMyFeedback(Authentication auth) {
-
         String email = auth.getName();
-
-        List<FeedbackResponseDTO> feedbacks =
-                studentService.getMyFeedback(email);
-
+        List<FeedbackResponseDTO> feedbacks = studentService.getMyFeedback(email);
         return ResponseEntity.ok(feedbacks);
     }
 
