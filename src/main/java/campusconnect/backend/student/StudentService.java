@@ -54,8 +54,8 @@ public class StudentService {
         System.out.println("Student: " + student.getId());
 
         // ✅ Already registered check
-        if(eventRegistrationRepository
-                .findByStudentIdAndEventId(student.getId(), event.getId()).isPresent()){
+        if (eventRegistrationRepository
+                .findByStudentIdAndEventId(student.getId(), event.getId()).isPresent()) {
             return "Already Registered";
         }
 
@@ -80,7 +80,7 @@ public class StudentService {
         eventRegistrationRepository.save(registration);
 
         // 🔥 STEP 3 — IF PAID → INVOICE + EMAIL
-        if(isPaid){
+        if (isPaid) {
 
             Map<String, Object> vars = new HashMap<>();
             vars.put("name", student.getUser().getName());
@@ -417,21 +417,22 @@ public class StudentService {
     }
 
 
-    //---------GET STUDENTS FEEDBACK--------------
+    // ✅ GIVE FEEDBACK
     public String giveFeedback(FeedbackRequestDTO dto, String email) {
 
+        // 1. Fetch user
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // ✅ 2. Fetch student from DB
+        // 2. Fetch student
         Student student = studentRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
-        // ✅ 2. Get event
+        // 3. Fetch event
         EventRequest event = eventRequestRepository.findById(dto.getEventId())
                 .orElseThrow(() -> new RuntimeException("Event not found"));
 
-        // ✅ 3. Check if student registered
+        // 4. Check if student is registered for this event
         Optional<EventRegistration> registration =
                 eventRegistrationRepository
                         .findByStudentIdAndEventId(student.getId(), event.getId());
@@ -440,20 +441,18 @@ public class StudentService {
             throw new RuntimeException("You are not registered for this event");
         }
 
-        // ✅ 4. Check event completed
-        if (event.getEventDate().isAfter(LocalDate.now().atStartOfDay())) {
-            throw new RuntimeException("Feedback allowed only after event is over");
+        // ✅ FIX 1: Correct date check — block feedback if event hasn't happened yet
+        if (event.getEventDate().isAfter(LocalDateTime.now())) {
+            throw new RuntimeException("Feedback can only be submitted after the event is over");
         }
 
-        // ✅ 5. Prevent duplicate feedback
-        boolean exists = feedbackRepository
-                .existsByStudentAndEvent(student, event);
-
+        // 6. Prevent duplicate feedback
+        boolean exists = feedbackRepository.existsByStudentAndEvent(student, event);
         if (exists) {
-            throw new RuntimeException("You already submitted feedback");
+            throw new RuntimeException("You have already submitted feedback for this event");
         }
 
-        // ✅ 6. Save feedback
+        // 7. Save feedback
         Feedback feedback = Feedback.builder()
                 .message(dto.getMessage())
                 .rating(dto.getRating())
@@ -464,10 +463,11 @@ public class StudentService {
                 .build();
 
         feedbackRepository.save(feedback);
-
         return "Feedback submitted successfully";
     }
 
+
+    // ✅ GET MY FEEDBACK
     public List<FeedbackResponseDTO> getMyFeedback(String email) {
 
         User user = userRepository.findByEmail(email)
@@ -476,30 +476,33 @@ public class StudentService {
         Student student = studentRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
-        // ✅ Get all registrations of this student
+        // Get all registrations of this student
         List<EventRegistration> registrations =
                 eventRegistrationRepository.findByStudentId(student.getId());
 
         return registrations.stream()
-                // ✅ Only COMPLETED events
-                .filter(reg -> reg.getEvent().getEventStatus() == EventStatus.COMPLETED)
-
+                // ✅ FIX 2: Show events that are COMPLETED *or* whose date has already passed
+                // This handles cases where status was never updated to COMPLETED in the DB
+                .filter(reg -> {
+                    EventRequest e = reg.getEvent();
+                    return e.getEventStatus() == EventStatus.COMPLETED
+                            || e.getEventDate().isBefore(LocalDateTime.now());
+                })
                 .map(reg -> {
                     EventRequest event = reg.getEvent();
 
-                    // ✅ Check if feedback already exists
+                    // Check if feedback already exists
                     Optional<Feedback> feedbackOpt =
                             feedbackRepository.findByStudentAndEvent(student, event);
 
                     if (feedbackOpt.isPresent()) {
                         Feedback f = feedbackOpt.get();
-
                         return new FeedbackResponseDTO(
                                 event.getId(),
                                 event.getTitle(),
                                 f.getRating(),
                                 f.getMessage(),
-                                true // ✅ already given
+                                true  // ✅ feedback already given
                         );
                     } else {
                         return new FeedbackResponseDTO(
@@ -507,11 +510,9 @@ public class StudentService {
                                 event.getTitle(),
                                 null,
                                 null,
-                                false // ❌ not given yet
+                                false // ❌ feedback not given yet
                         );
                     }
                 })
                 .toList();
-    }
-
-}
+    }}
