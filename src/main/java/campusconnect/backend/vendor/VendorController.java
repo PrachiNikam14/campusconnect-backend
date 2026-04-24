@@ -1,12 +1,10 @@
 package campusconnect.backend.vendor;
 
-import campusconnect.backend.entity.EventService;
 import campusconnect.backend.entity.Vendor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 
 import java.util.List;
 
@@ -55,21 +53,18 @@ public class VendorController {
         return vendorService.getVerificationStatus(authentication.getName());
     }
 
-    // NEW API
+    // Upload License
     @PostMapping("/upload-license")
     public Vendor uploadBusinessLicense(
             @RequestParam("file") MultipartFile file,
             Authentication authentication
     ) {
-
-        String email = authentication.getName();
-
-        return vendorService.uploadBusinessLicense(email, file);
+        return vendorService.uploadBusinessLicense(authentication.getName(), file);
     }
 
-    // Vendor Event History
+    // ================= UPDATED HISTORY API =================
     @GetMapping("/history")
-    public List<EventService> getVendorHistory(Authentication authentication) {
+    public List<VendorHistoryDTO> getVendorHistory(Authentication authentication) {
 
         return vendorService.getVendorHistory(authentication.getName());
     }
